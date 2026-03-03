@@ -45,3 +45,34 @@ dotnet test
 - `ConnectionStrings__PostgreSql`
 - `OTEL_EXPORTER_OTLP_ENDPOINT`
 - `ASPNETCORE_ENVIRONMENT`
+
+## GitHub Actions CI/CD
+
+Workflow file: `.github/workflows/ci-cd.yml`
+
+Pipeline stages:
+
+1. Run `dotnet` restore/build/test
+2. Build and push Docker image to Azure Container Registry (ACR)
+3. Scan pushed image with Trivy
+4. Deploy to AKS with Helm
+   - `develop` branch / manual dispatch `staging` -> `staging` environment
+   - `main` branch / manual dispatch `production` -> `production` environment
+
+Required repository secrets:
+
+- `ACR_LOGIN_SERVER`
+- `ACR_USERNAME`
+- `ACR_PASSWORD`
+- `AZURE_CREDENTIALS_JSON`
+- `AZURE_RG_STAGING`
+- `AKS_CLUSTER_STAGING`
+- `AZURE_RG_PRODUCTION`
+- `AKS_CLUSTER_PRODUCTION`
+
+Expected Helm chart location:
+
+- `./helm/hr-employee-service`
+- values files:
+  - `./helm/hr-employee-service/values-staging.yaml`
+  - `./helm/hr-employee-service/values-production.yaml`
