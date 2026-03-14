@@ -1,0 +1,31 @@
+replicaCount: 2
+
+image:
+  repository: acr.example.azurecr.io/hr-employee-service
+  tag: staging
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: hr-employee-service.staging.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: hr-employee-service-staging-tls
+      hosts:
+        - hr-employee-service.staging.example.com
+
+autoscaling:
+  minReplicas: 2
+  maxReplicas: 4
+
+env:
+  ASPNETCORE_ENVIRONMENT: Staging
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.monitoring:4317
+
+secretEnv:
+  ConnectionStrings__PostgreSql: "Host=postgresql.staging.svc.cluster.local;Port=5432;Database=employee_db;Username=employee_user;Password=change-me"

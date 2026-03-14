@@ -1,0 +1,16 @@
+apiVersion: v2
+name: hr-employee-service
+description: Enterprise-grade Helm chart for deploying the HR Employee Service API
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+kubeVersion: ">=1.27.0-0"
+keywords:
+  - hr
+  - employee
+  - dotnet
+  - api
+home: https://example.internal/hr-employee-service
+maintainers:
+  - name: platform-engineering
+    email: platform-engineering@example.internal

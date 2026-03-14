@@ -1,0 +1,42 @@
+replicaCount: 3
+
+image:
+  repository: acr.example.azurecr.io/hr-employee-service
+  tag: production
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "2m"
+  hosts:
+    - host: hr-employee-service.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: hr-employee-service-production-tls
+      hosts:
+        - hr-employee-service.example.com
+
+autoscaling:
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 75
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+env:
+  ASPNETCORE_ENVIRONMENT: Production
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.monitoring:4317
+
+secretEnv:
+  ConnectionStrings__PostgreSql: "Host=postgresql.production.svc.cluster.local;Port=5432;Database=employee_db;Username=employee_user;Password=change-me"
