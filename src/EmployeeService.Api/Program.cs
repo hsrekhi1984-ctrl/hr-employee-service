@@ -28,7 +28,6 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("PostgreSql") ?? string.Empty, name: "postgresql");
@@ -54,11 +53,6 @@ builder.Logging.AddOpenTelemetry(options =>
 });
 
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
 
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
