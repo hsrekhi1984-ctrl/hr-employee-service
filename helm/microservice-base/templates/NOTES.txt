@@ -1,0 +1,10 @@
+1. Verify release resources:
+  kubectl get all -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+
+2. Access URL:
+{{- if .Values.ingress.enabled }}
+  echo "https://{{ .Values.ingress.host }}{{ .Values.ingress.path }}"
+{{- else }}
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "microservice-base.fullname" . }} 8080:{{ .Values.service.port }}
+  echo "http://127.0.0.1:8080"
+{{- end }}
