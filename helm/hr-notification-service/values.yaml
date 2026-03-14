@@ -1,0 +1,21 @@
+service:
+  name: hr-notification-service
+  port: 80
+  containerPort: 8080
+
+image:
+  repository: acr.example.azurecr.io/hr-notification-service
+  tag: "1.0.0"
+
+replicaCount: 2
+
+ingress:
+  enabled: true
+  className: nginx
+  host: hr-notification-service.example.com
+  path: /
+  pathType: Prefix
+
+env:
+  ASPNETCORE_ENVIRONMENT: Production
+  ASPNETCORE_URLS: http://+:8080
