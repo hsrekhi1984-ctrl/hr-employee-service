@@ -22,7 +22,8 @@ on:
 env:
   DOTNET_VERSION: 8.0.x
   IMAGE_NAME: hr-employee-service
-  HELM_CHART_PATH: ./helm/hr-employee-service
+  HELM_VALUES_PATH: ./helm/hr-employee-service
+  HELM_REUSABLE_CHART_PATH: ./hr-helm-charts/helm/microservice-base
 
 jobs:
   test:
@@ -128,6 +129,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Checkout reusable Helm charts
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/hr-helm-charts
+          path: hr-helm-charts
+
       - name: Azure login
         uses: azure/login@v2
         with:
@@ -145,12 +152,12 @@ jobs:
       - name: Deploy with Helm
         run: |
           kubectl create namespace staging --dry-run=client -o yaml | kubectl apply -f -
-          helm upgrade --install hr-employee-service ${{ env.HELM_CHART_PATH }} \
+          helm upgrade --install hr-employee-service ${{ env.HELM_REUSABLE_CHART_PATH }} \
             --namespace staging \
             --set image.repository=${{ needs.build_and_push.outputs.image }} \
             --set image.tag=${{ needs.build_and_push.outputs.tag }} \
             --set environment=staging \
-            -f ${{ env.HELM_CHART_PATH }}/values-staging.yaml
+            -f ${{ env.HELM_VALUES_PATH }}/values-staging.yaml
 
   deploy_production:
     name: Deploy to AKS (production)
@@ -167,6 +174,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Checkout reusable Helm charts
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/hr-helm-charts
+          path: hr-helm-charts
 
       - name: Azure login
         uses: azure/login@v2
@@ -185,9 +198,9 @@ jobs:
       - name: Deploy with Helm
         run: |
           kubectl create namespace production --dry-run=client -o yaml | kubectl apply -f -
-          helm upgrade --install hr-employee-service ${{ env.HELM_CHART_PATH }} \
+          helm upgrade --install hr-employee-service ${{ env.HELM_REUSABLE_CHART_PATH }} \
             --namespace production \
             --set image.repository=${{ needs.build_and_push.outputs.image }} \
             --set image.tag=${{ needs.build_and_push.outputs.tag }} \
             --set environment=production \
-            -f ${{ env.HELM_CHART_PATH }}/values-production.yaml
+            -f ${{ env.HELM_VALUES_PATH }}/values-production.yaml
