@@ -71,7 +71,14 @@ jobs:
             DEPLOY_ENV="staging"
           fi
 
-          IMAGE="${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}"
+          ACR_LOGIN_SERVER="$(printf '%s' "${{ secrets.ACR_LOGIN_SERVER }}" | tr -d '\r\n')"
+
+          if [[ -z "$ACR_LOGIN_SERVER" ]]; then
+            echo "ACR_LOGIN_SERVER is empty after sanitization. Check repository secret ACR_LOGIN_SERVER." >&2
+            exit 1
+          fi
+
+          IMAGE="${ACR_LOGIN_SERVER%/}/${{ env.IMAGE_NAME }}"
           TAG="${DEPLOY_ENV}-${GITHUB_SHA}"
 
           echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
