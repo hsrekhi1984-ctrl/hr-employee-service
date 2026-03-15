@@ -154,11 +154,18 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS_JSON }}
 
+      - name: Install kubelogin
+        shell: bash
+        run: |
+          az aks install-cli --kubelogin-install-location /usr/local/bin/kubelogin
+          kubelogin --version
+
       - name: Set AKS context
         uses: azure/aks-set-context@v4
         with:
           resource-group: ${{ secrets.AZURE_RG_STAGING }}
           cluster-name: ${{ secrets.AKS_CLUSTER_STAGING }}
+          use-kubelogin: true
 
       - name: Setup Helm
         uses: azure/setup-helm@v4
@@ -196,11 +203,18 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS_JSON }}
 
+      - name: Install kubelogin
+        shell: bash
+        run: |
+          az aks install-cli --kubelogin-install-location /usr/local/bin/kubelogin
+          kubelogin --version
+
       - name: Set AKS context
         uses: azure/aks-set-context@v4
         with:
           resource-group: ${{ secrets.AZURE_RG_PRODUCTION }}
           cluster-name: ${{ secrets.AKS_CLUSTER_PRODUCTION }}
+          use-kubelogin: true
 
       - name: Setup Helm
         uses: azure/setup-helm@v4
