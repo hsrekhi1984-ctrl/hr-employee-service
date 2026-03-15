@@ -20,16 +20,17 @@ env:
   IMAGE_NAME: hr-employee-service
   HELM_VALUES_PATH: ./helm/hr-employee-service
   HELM_REUSABLE_CHART_PATH: ./hr-helm-charts/helm/microservice-base
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -51,7 +52,7 @@ jobs:
       image: ${{ steps.meta.outputs.image }}
       tag: ${{ steps.meta.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Resolve image metadata
         id: meta
@@ -119,10 +120,10 @@ jobs:
       (github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment == 'staging')
     environment: staging
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Checkout Helm charts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ github.repository_owner }}/hr-helm-charts
           path: hr-helm-charts
@@ -161,10 +162,10 @@ jobs:
       (github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment == 'production')
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Checkout Helm charts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ github.repository_owner }}/hr-helm-charts
           path: hr-helm-charts
