@@ -160,7 +160,8 @@ jobs:
         uses: azure/use-kubelogin@v1
         with:
           kubelogin-version: 'latest'
-          github-token: ${{ github.token }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Convert kubeconfig
         run: kubelogin convert-kubeconfig -l azurecli      
@@ -205,7 +206,8 @@ jobs:
         uses: azure/use-kubelogin@v1
         with:
           kubelogin-version: 'latest'
-          github-token: ${{ github.token }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Set AKS context
         uses: azure/aks-set-context@v4
