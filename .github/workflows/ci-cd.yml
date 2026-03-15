@@ -191,6 +191,7 @@ jobs:
         uses: azure/use-kubelogin@v1
         with:
           kubelogin-version: 'latest'
+          github-token: ${{ github.token }}
 
       - name: Convert kubeconfig
         run: kubelogin convert-kubeconfig -l azurecli      
@@ -232,10 +233,10 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS_JSON }}
 
       - name: Install kubelogin
-        shell: bash
-        run: |
-          az aks install-cli --kubelogin-install-location /usr/local/bin/kubelogin
-          kubelogin --version
+        uses: azure/use-kubelogin@v1
+        with:
+          kubelogin-version: 'latest'
+          github-token: ${{ github.token }}
 
       - name: Set AKS context
         uses: azure/aks-set-context@v4
