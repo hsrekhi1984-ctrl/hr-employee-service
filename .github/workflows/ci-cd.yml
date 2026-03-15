@@ -129,6 +129,23 @@ jobs:
           echo "Scanning image:"
           echo "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ needs.build_and_push.outputs.tag }}"
 
+      - name: Pull image locally for scan
+        shell: bash
+        run: |
+          IMAGE="${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ needs.build_and_push.outputs.tag }}"
+          for i in {1..5}; do
+            if docker pull "$IMAGE"; then
+              echo "Pulled $IMAGE"
+              break
+            fi
+            if [[ "$i" -eq 5 ]]; then
+              echo "Failed to pull $IMAGE after retries" >&2
+              exit 1
+            fi
+            echo "Pull failed, retrying in 15s ($i/5)"
+            sleep 15
+          done
+
       - name: Run Trivy
         uses: aquasecurity/trivy-action@0.24.0
         env:
