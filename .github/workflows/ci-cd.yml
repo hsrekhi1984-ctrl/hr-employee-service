@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI/CD Atomation
 
 on:
 pull_request:
