@@ -56,18 +56,28 @@ jobs:
 
       - name: Resolve image metadata
         id: meta
+        shell: bash
         run: |
+      
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event.inputs.target_environment }}" == "production" ]]; then
             DEPLOY_ENV="production"
           else
             DEPLOY_ENV="staging"
           fi
-
+      
           IMAGE="${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}"
           TAG="${DEPLOY_ENV}-${GITHUB_SHA}"
+      
+          echo "IMAGE=$IMAGE"
+          echo "TAG=$TAG"
+      
+          echo "image=$IMAGE" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
-          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+      - name: Debug image info
+        run: |
+          echo "Image: ${{ steps.meta.outputs.image }}"
+          echo "Tag: ${{ steps.meta.outputs.tag }}"
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
