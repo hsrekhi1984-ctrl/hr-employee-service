@@ -103,18 +103,31 @@ jobs:
     name: Scan image with Trivy
     runs-on: ubuntu-latest
     needs: build_and_push
+  
     steps:
+  
+      - name: Set image variables
+        run: |
+          IMAGE="${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}"
+          TAG="staging-${GITHUB_SHA}"
+  
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+          echo "TAG=$TAG" >> $GITHUB_ENV
+  
       - name: Login to ACR
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
-
+  
+      - name: Debug image
+        run: echo "$IMAGE:$TAG"
+  
       - name: Run Trivy
         uses: aquasecurity/trivy-action@0.24.0
         with:
-          image-ref: ${{ needs.build_and_push.outputs.image }}:${{ needs.build_and_push.outputs.tag }}
+          image-ref: ${{ env.IMAGE }}:${{ env.TAG }}
           format: table
           exit-code: "1"
           ignore-unfixed: true
