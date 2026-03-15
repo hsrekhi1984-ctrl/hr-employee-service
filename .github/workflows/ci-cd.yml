@@ -83,22 +83,23 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to ACR
-        uses: docker/login-action@v3
+      - name: Azure login
+        uses: azure/login@v2
         with:
-          registry: ${{ secrets.ACR_LOGIN_SERVER }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+          creds: ${{ secrets.AZURE_CREDENTIALS_JSON }}
 
-      - name: Build and Push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile
-          push: true
-          tags: |
-            ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}
-            ${{ steps.meta.outputs.image }}:latest
+      - name: Build and push image via ACR Tasks
+        shell: bash
+        run: |
+          ACR_NAME="${{ secrets.ACR_LOGIN_SERVER }}"
+          ACR_NAME="${ACR_NAME%%.*}"
+
+          az acr build \
+            --registry "$ACR_NAME" \
+            --image "${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tag }}" \
+            --image "${{ env.IMAGE_NAME }}:latest" \
+            --file Dockerfile \
+            .
 
   trivy_scan:
     name: Scan image with Trivy
@@ -106,43 +107,21 @@ jobs:
     needs: build_and_push
 
     steps:
+      - uses: actions/checkout@v5
 
-      - name: Login to ACR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.ACR_LOGIN_SERVER }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
-
-      - name: Show image to be scanned
+      - name: Show image tag to be scanned
         run: |
-          echo "Scanning image:"
+          echo "Building and scanning image locally with tag:"
           echo "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ needs.build_and_push.outputs.tag }}"
 
-      - name: Pull image locally for scan
-        shell: bash
+      - name: Build image locally for scan
         run: |
-          IMAGE="${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ needs.build_and_push.outputs.tag }}"
-          for i in {1..5}; do
-            if docker pull "$IMAGE"; then
-              echo "Pulled $IMAGE"
-              break
-            fi
-            if [[ "$i" -eq 5 ]]; then
-              echo "Failed to pull $IMAGE after retries" >&2
-              exit 1
-            fi
-            echo "Pull failed, retrying in 15s ($i/5)"
-            sleep 15
-          done
+          docker build -t local-scan:${{ needs.build_and_push.outputs.tag }} -f Dockerfile .
 
       - name: Run Trivy
         uses: aquasecurity/trivy-action@0.24.0
-        env:
-          TRIVY_USERNAME: ${{ secrets.ACR_USERNAME }}
-          TRIVY_PASSWORD: ${{ secrets.ACR_PASSWORD }}
         with:
-          image-ref: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ needs.build_and_push.outputs.tag }}
+          image-ref: local-scan:${{ needs.build_and_push.outputs.tag }}
           format: table
           exit-code: "1"
           ignore-unfixed: true
