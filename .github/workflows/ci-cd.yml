@@ -223,6 +223,8 @@ jobs:
         run: |
           kubectl create namespace production --dry-run=client -o yaml | kubectl apply -f -
 
+          helm uninstall hr-employee-service -n staging || true
+          
           helm upgrade --install hr-employee-service ${{ env.HELM_REUSABLE_CHART_PATH }} \
             --namespace production \
             --set image.repository=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }} \
