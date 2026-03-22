@@ -52,11 +52,11 @@ builder.Logging.AddOpenTelemetry(options =>
     options.AddOtlpExporter();
 });
 
-builder.Services.AddHealthChecks();
+//builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-app.MapHealthChecks("/health");
+
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
